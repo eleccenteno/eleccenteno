@@ -1,6 +1,9 @@
 const db = require('../db');
 const { exec } = require('child_process');
 
+const fs = require('fs');
+const path = require('path');
+
 exports.getStats = async (req, res) => {
   try {
     const { rows: total_images } = await db.query('SELECT COUNT(*) FROM imagenes_preventivos');
@@ -47,4 +50,18 @@ exports.getStats = async (req, res) => {
   } catch (error) {
     res.status(500).send({ message: 'Error al obtener las estadísticas', error: error.message });
   }
+};
+
+exports.getLogs = (req, res) => {
+  const logDir = path.join(__dirname, '../../logs');
+  fs.readdir(logDir, (err, files) => {
+    if (err) {
+      return res.status(500).send({ message: 'No se pudo leer el directorio de logs' });
+    }
+    const logs = files.map(file => {
+      const content = fs.readFileSync(path.join(logDir, file), 'utf-8');
+      return JSON.parse(content);
+    });
+    res.json(logs);
+  });
 };
