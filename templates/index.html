@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Subida de Archivos</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #0056b3;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        input[type="text"], input[type="file"] {
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        input[type="submit"] {
+            background-color: #0056b3;
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        input[type="submit"]:hover {
+            background-color: #004494;
+        }
+        #message {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 4px;
+            display: none;
+        }
+        #message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        #message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Subir Imagen de Preventivo</h1>
+        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="propietario">Propietario:</label>
+                <input type="text" id="propietario" name="propietario" required>
+            </div>
+            <div class="form-group">
+                <label for="ano">Año:</label>
+                <input type="text" id="ano" name="ano" required>
+            </div>
+            <div class="form-group">
+                <label for="centro">Nombre del Centro:</label>
+                <input type="text" id="centro" name="centro" required>
+            </div>
+            <div class="form-group">
+                <label for="filepicker">Nombre del Filepicker:</label>
+                <input type="text" id="filepicker" name="filepicker" required>
+            </div>
+            <div class="form-group">
+                <label for="file">Seleccionar imagen:</label>
+                <input type="file" id="file" name="file" accept="image/png, image/jpeg">
+            </div>
+            <input type="submit" value="Finalizar Preventivo y Subir">
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const messageDiv = document.getElementById('message');
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                messageDiv.style.display = 'block';
+                if (status === 200) {
+                    messageDiv.className = 'success';
+                    messageDiv.textContent = 'Éxito: ' + body.message + '. Ruta: ' + body.path;
+                } else {
+                    messageDiv.className = 'error';
+                    messageDiv.textContent = 'Error: ' + body.error;
+                }
+            })
+            .catch(error => {
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'error';
+                messageDiv.textContent = 'Error de red o del servidor.';
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
